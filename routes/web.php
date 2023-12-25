@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    dd('ok');
     return response()->file(public_path('dist/index.html'));
 //    return view('welcome');
 });
