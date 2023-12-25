@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# Для локальной сборки и тестирования образов
+
+# Переменные цветов, для более удобной работы с ними
+RED='\033[0;31m'
+WHITE='\033[1;37m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+GREY='\033[0;37m'
+
+# Закрывающий "тег" для цветов
+NC='\033[0m'
+
+function show_help() {
+  echo -e "${WHITE}Использование:${NC}"
+  echo -e "  ${GREEN}srv${NC} ${WHITE}[COMMAND]${NC} ${GREY}[ARGS...]${NC}"
+
+  echo
+  echo -e "${WHITE}Команды:${NC}"
+  echo -e "  ${GREEN}help${NC}                      ${WHITE}Вызов справки${NC}"
+
+  echo
+  echo -e "  ${GREEN}build${NC} ${WHITE}[TAG]${NC} ${GREY}[?dev]${NC}    ${WHITE}Сборка образа${NC}"
+  echo -e "  ${GREEN}all${NC}                   ${WHITE}Сборка всех образов${NC}"
+
+  echo
+  echo -e "  ${GREEN}php-fpm${NC}               ${WHITE}Сборка php-fpm: production${NC}"
+  echo -e "  ${GREEN}php-fpm:dev${NC}           ${WHITE}Сборка php-fpm: development${NC}"
+  echo -e "  ${GREEN}php-worker${NC}            ${WHITE}Сборка php-worker: production${NC}"
+  echo -e "  ${GREEN}php-worker:dev${NC}        ${WHITE}Сборка php-worker: development${NC}"
+  echo -e "  ${GREEN}mysql${NC}                 ${WHITE}Сборка mysql: production${NC}"
+  echo -e "  ${GREEN}mysql:dev${NC}             ${WHITE}Сборка mysql: development${NC}"
+  echo -e "  ${GREEN}redis${NC}                 ${WHITE}Сборка redis${NC}"
+  echo -e "  ${GREEN}nginx${NC}                 ${WHITE}Сборка nginx${NC}"
+}
+
+function unknown_command_handler() {
+  echo -e "${RED}No such command:${NC} ${ORANGE}$1${NC}"
+  echo
+
+  show_help
+}
+
+if [ $# -gt 0 ]; then
+  if [ "$1" == "build" ]; then
+    shift 1
+
+    if [ "$2" == 'dev' ]; then
+      docker build --build-arg APP_ENV="dev" --tag "$1-local-dev:latest" "./$1"
+    else
+      docker build --tag "$1-local:latest" "./$1"
+    fi
+
+  elif [ "$1" == "php-fpm" ]; then
+    shift 1
+
+    ./"$0" build php-fpm
+
+  elif [ "$1" == "php-fpm:dev" ]; then
+    shift 1
+
+    ./"$0" build php-fpm dev
+
+  elif [ "$1" == "php-worker" ]; then
+    shift 1
+
+    ./"$0" build php-worker
+
+  elif [ "$1" == "php-worker:dev" ]; then
+    shift 1
+
+    ./"$0" build php-worker dev
+
+  elif [ "$1" == "mysql" ]; then
+    shift 1
+
+    ./"$0" build mysql
+
+  elif [ "$1" == "mysql:dev" ]; then
+    shift 1
+
+    ./"$0" build mysql dev
+
+  elif [ "$1" == "redis" ]; then
+    shift 1
+
+    ./"$0" build redis
+
+  elif [ "$1" == "nginx" ]; then
+    shift 1
+
+    ./"$0" build nginx
+
+  elif [ "$1" == "all" ]; then
+    shift 1
+
+    ./"$0" php-fpm \
+    && ./"$0" php-fpm:dev \
+    && ./"$0" php-worker \
+    && ./"$0" php-worker:dev \
+    && ./"$0" mysql \
+    && ./"$0" mysql:dev \
+    && ./"$0" redis \
+    && ./"$0" nginx
+
+  else
+    unknown_command_handler "$@"
+  fi
+else
+    unknown_command_handler "$@"
+fi

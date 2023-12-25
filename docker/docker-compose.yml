@@ -1,0 +1,118 @@
+version: '3.5'
+
+networks:
+  frontend:
+    driver: ${NETWORKS_DRIVER}
+    external:
+      name: frontend
+  backend:
+    driver: ${NETWORKS_DRIVER}
+
+volumes:
+  mysql:
+    driver: ${VOLUMES_DRIVER}
+  phpmyadmin:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+
+  ### PHP-FPM ##############################################
+  php-fpm:
+    build: ./php-fpm
+    user: "${PHP_FPM_PUID}:${PHP_FPM_PGID}"
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ${DATA_PATH_HOST}/backups:${APP_BACKUP_PATH_CONTAINER}
+    environment:
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+      - DOCKER_TLS_VERIFY=1
+      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_CERT_PATH=/certs/client
+    depends_on:
+      - mysql
+    networks:
+      - backend
+      - frontend
+
+  ### PHP Worker ############################################
+  php-worker:
+    build: ./php-worker
+    user: "${PHP_WORKER_PUID}:${PHP_WORKER_PGID}"
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ${DATA_PATH_HOST}/backups:${APP_BACKUP_PATH_CONTAINER}
+    depends_on:
+      - mysql
+    networks:
+      - backend
+
+  ### NGINX Server #########################################
+  nginx:
+    build: ./nginx
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SSL_PATH}:/etc/nginx/ssl
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.entrypoints=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.rule=${BACKEND_HOSTS}"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.tls.certresolver=letsEncrypt"
+      - "traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-compress.compress=true"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}.middlewares=${COMPOSE_PROJECT_NAME}-compress"
+      - "traefik.http.services.${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+      - "traefik.docker.network=frontend"
+      - "traefik.backend=nginx"
+    depends_on:
+      - php-fpm
+    networks:
+      - frontend
+      - backend
+
+  ### MySQL ################################################
+  mysql:
+    build: ./mysql
+    command: [ "--default-authentication-plugin=mysql_native_password", "--log_bin_trust_function_creators=1" ]
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=UTC
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+    security_opt:
+      - seccomp:unconfined
+    restart: always
+    networks:
+      - backend
+
+  ### phpMyAdmin ###########################################
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ABSOLUTE_URI=https://${PMA_ADDRESS}
+      - PMA_HOST=mysql
+      - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
+      - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
+      - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
+    depends_on:
+      - mysql
+    links:
+      - mysql:mysql
+    networks:
+      - frontend
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pma-${COMPOSE_PROJECT_NAME}.entrypoints=https"
+      - "traefik.http.routers.pma-${COMPOSE_PROJECT_NAME}.rule=Host(`${PMA_ADDRESS}`)"
+      - "traefik.http.routers.pma-${COMPOSE_PROJECT_NAME}.tls=true"
+      - "traefik.http.routers.pma-${COMPOSE_PROJECT_NAME}.tls.certresolver=letsEncrypt"
+      - "traefik.http.middlewares.pma-${COMPOSE_PROJECT_NAME}-compress.compress=true"
+      - "traefik.http.routers.pma-${COMPOSE_PROJECT_NAME}.middlewares=pma-${COMPOSE_PROJECT_NAME}-compress"
+      - "traefik.http.services.pma-${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=80"
+      - "traefik.docker.network=frontend"
+      - "traefik.backend=phpmyadmin"
+

@@ -1,0 +1,293 @@
+#!/usr/bin/env bash
+
+if ! [ -x "$(command -v docker-compose)" ]; then
+  shopt -s expand_aliases
+  alias docker-compose='docker compose'
+fi
+
+# Переменные цветов, для более удобной работы с ними
+RED='\033[0;31m'
+WHITE='\033[1;37m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+GREY='\033[0;37m'
+
+# Закрывающий "тег" для цветов
+NC='\033[0m'
+
+# Система, на которой запускается докер
+UNAMEOUT="$(uname -s)"
+
+# Verify operating system is supported...
+case "${UNAMEOUT}" in
+  Linux*)             MACHINE="LINUX";;
+  Darwin*)            MACHINE="MAC";;
+  MINGW*)             MACHINE="WINDOWS";;
+  *)                  MACHINE="UNKNOWN"
+esac
+
+if [ "$MACHINE" == "UNKNOWN" ]; then
+  echo -e "${ORANGE}Unsupported operating system [$(uname -s)]. Supports macOS, Linux, and Windows (WSL2).${NC}" >&2
+
+  exit 1
+fi
+
+# Подключаем .env файл
+if [ -f "./.env" ]; then
+  source "./.env"
+else
+  echo -e "${RED}Убедитесь что вы определили .env файл${NC}\""
+
+  exit 1
+fi
+
+export COMPOSE_PATH_SEPARATOR=":"
+
+# Подключаем .env файл
+# В зависимости от окружения подключаем соответствующие docker-compose конфигурации
+export COMPOSE_FILE=docker-compose.yml
+
+
+# Вывод справки
+function show_help() {
+  echo -e "${WHITE}Использование:${NC}"
+  echo -e "  ${GREEN}srv${NC} ${WHITE}[COMMAND]${NC} ${GREY}[ARGS...]${NC}"
+
+  echo
+  echo -e "${WHITE}Команды:${NC}"
+  echo -e "  ${GREEN}help${NC}                      ${WHITE}Вызов справки${NC}"
+
+  echo -e "  ${GREEN}registry-login${NC}            ${WHITE}Авторизоваться в регистре образов GitLab${NC}"
+
+  echo
+  echo -e "  ${GREEN}update${NC}                    ${WHITE}Обновление образов и перезапуск контейнеров${NC}"
+  echo -e "  ${GREEN}up${NC}                        ${WHITE}Запустить все контейнеры${NC}"
+  echo -e "  ${GREEN}down${NC}                      ${WHITE}Остановить все контейнеры${NC}"
+  echo -e "  ${GREEN}build${NC}                     ${WHITE}Сбор образов${NC}"
+  echo -e "  ${GREEN}restart${NC}                   ${WHITE}Перезапустить все контейнеры${NC}"
+  echo -e "  ${GREEN}worker-restart${NC}            ${WHITE}Перезапустить очереди${NC}"
+  echo -e "  ${GREEN}worker-restart-hard${NC}       ${WHITE}Перезапустить очереди (сам докер-контейнер)${NC}"
+
+  echo
+  echo -e "  ${GREEN}[bash]${NC} ${WHITE}[container]${NC}        ${WHITE}Запустить оболочку bash в нужном контейнере${NC}"
+  echo -e "  ${GREEN}[shell|sh]${NC} ${WHITE}[container]${NC}    ${WHITE}Запустить оболочку sh в нужном контейнере${NC}"
+  echo -e "  ${GREEN}mysql${NC}                     ${WHITE}Войти в терминал MySQL контейнера${NC}"
+  echo -e "  ${GREEN}make-mysql-dump${NC}           ${WHITE}Сделать дамп БД (будет лежать по пути: ${DATA_PATH_HOST}${APP_BACKUP_PATH_CONTAINER}/dump.sql.gz)${NC}"
+  echo -e "  ${GREEN}redis${NC}                     ${WHITE}Войти в терминал Redis контейнера${NC}"
+
+  echo
+  echo -e "  ${GREEN}php${NC} ${WHITE}[command]${NC}             ${WHITE}Выполнить команду php${NC}"
+  echo -e "  ${GREEN}composer${NC} ${WHITE}[command]${NC}        ${WHITE}Выполнить команду композера${NC}"
+  echo -e "  ${GREEN}artisan${NC} ${WHITE}[command]${NC}         ${WHITE}Выполнить команду Artisan${NC}"
+  echo -e "  ${GREEN}migrate${NC}                   ${WHITE}Выполнить миграции БД${NC}"
+  echo -e "  ${GREEN}migrate-rollback${NC}          ${WHITE}Откатить миграции БД${NC}"
+  echo -e "  ${GREEN}make-backup${NC}               ${WHITE}Сделать бекап системы${NC}"
+  echo -e "  ${GREEN}optimize:clear${NC}            ${WHITE}Очистить весь кеш Laravel${NC}"
+  echo -e "  ${GREEN}optimize${NC}                  ${WHITE}Кеширование всех ресурсов Laravel (configs, routes, views, events)${NC}"
+  if [ "${APP_ENV}" == 'prod' ] || [ "${APP_ENV}" == 'qa' ]; then
+    echo -e "  ${GREEN}opcache:clear${NC}             ${WHITE}Очистить OPCache (перезапустится контейнер с php-fpm)${NC}"
+    echo -e "  ${GREEN}post-update${NC}               ${WHITE}Очистить OPCache и перезапустить очереди (необходимо выполнять после любого изменении в коде)${NC}"
+  fi
+
+  echo -e "  ${GREEN}maintenance:on${NC}            ${WHITE}Включить режим поддержки (нужно при крупном обновлении системы)${NC}"
+  echo -e "  ${GREEN}maintenance:off${NC}           ${WHITE}Отключить режим поддержки${NC}"
+
+  if [ "${APP_ENV}" == 'dev' ]; then
+    echo
+    echo -e "  ${GREEN}langjs${NC}                    ${WHITE}Сгенерировать js языковые файлы на основе файлов перевода самого laravel${NC}"
+    echo -e "                            ${WHITE}Нужно исключительно для сборки кабинета оператора${NC}"
+    echo -e "  ${GREEN}ide-helper${NC}                ${WHITE}Сгенерировать файлы подсказок для IDE${NC}"
+    echo -e "  ${GREEN}code:analyze${NC}              ${WHITE}Запустить анализ кода с помощью larastan (phpstan)${NC}"
+  fi
+
+  echo
+  echo -e "  ${GREEN}docker-compose${NC} ${WHITE}[command]${NC}  ${WHITE}Запускаем команду самого docker-compose${NC}"
+}
+
+# Вывод ошибки при попытке выполнить неопределенную команду
+function unknown_command_handler() {
+  echo -e "${RED}No such command:${NC} ${ORANGE}$1${NC}"
+  echo
+
+  show_help
+}
+
+STARTUP_SERVICES=("php-fpm" "php-worker" "nginx" "mysql")
+
+if [ "${ENABLE_PHPMYADMIN}" != "0" ]; then
+  STARTUP_SERVICES+=( "phpmyadmin" )
+fi
+
+old_ifs=$IFS
+
+IFS=':'
+read -ra my_array <<< "$APP_ADDRESS"
+
+# Restore the original IFS value
+IFS=$old_ifs
+
+#FRONTEND_HOSTS=""
+BACKEND_HOSTS=""
+
+for element in "${my_array[@]}"; do
+  if [ ${#BACKEND_HOSTS} -gt 0 ]; then
+    #FRONTEND_HOSTS="${FRONTEND_HOSTS} ||"
+    BACKEND_HOSTS="${BACKEND_HOSTS} ||"
+  fi
+
+  #FRONTEND_HOSTS="${FRONTEND_HOSTS} (Host(\`${element}\`) && PathPrefix(\`/cabinet\`, \`/app/assets\`))"
+  BACKEND_HOSTS="${BACKEND_HOSTS} Host(\`${element}\`)"
+done
+
+FRONTEND_HOSTS="(${BACKEND_HOSTS}) && PathPrefix(\`/cabinet\`, \`/app/assets\`)"
+
+export FRONTEND_HOSTS;
+export BACKEND_HOSTS;
+
+if [ $# -gt 0 ]; then
+  # Вызов справки
+  if [ "$1" == "help" ]; then
+    show_help
+
+  # Обновление образов и перезапуск контейнеров
+  elif [ "$1" == "update" ]; then
+    docker-compose pull && docker-compose up -d "${STARTUP_SERVICES[@]}"
+
+  # Запустить все контейнеры
+  elif [ "$1" == "up" ]; then
+    docker-compose up --no-recreate -d "${STARTUP_SERVICES[@]}"
+
+  # Остановить все контейнеры
+  elif [ "$1" == "down" ]; then
+    docker-compose down
+
+  # Сбор образов
+  elif [ "$1" == "build" ]; then
+      docker-compose build
+
+  # Перезапустить все контейнеры
+  elif [ "$1" == "restart" ]; then
+    ./"$0" down && ./"$0" up
+
+  # Перезапустить очереди
+  elif [ "$1" == "worker-restart" ]; then
+    docker-compose exec php-worker php /var/www/artisan horizon:terminate
+
+  # Перезапустить очереди (сам докер-контейнер)
+  elif [ "$1" == "worker-restart-hard" ]; then
+    docker-compose restart php-worker
+
+  # Запустить оболочку bash в нужном контейнере
+  elif [ "$1" == "bash" ]; then
+    shift 1
+
+    docker-compose exec "$1" bash
+
+  # Запустить оболочку sh в нужном контейнере
+  elif [ "$1" == "shell" ] || [ "$1" == "sh" ]; then
+    shift 1
+
+    docker-compose exec "$1" sh
+
+  # Выполнить команду php
+  elif [ "$1" == "php" ]; then
+    shift 1
+
+    docker-compose exec php-fpm bash php "$@"
+
+  # Выполнить команду композера
+  elif [ "$1" == "composer" ]; then
+    shift 1
+
+    docker-compose exec php-fpm composer "$@"
+
+  # Выполнить команду Artisan
+  elif [ "$1" == "artisan" ] || [ "$1" == 'art' ]; then
+    shift 1
+
+    docker-compose exec php-fpm php artisan "$@"
+
+  # Выполнить миграции БД
+  elif [ "$1" == "migrate" ]; then
+    docker-compose exec php-fpm php artisan migrate
+
+  # Откатить миграции БД
+  elif [ "$1" == "migrate-rollback" ]; then
+    docker-compose exec php-fpm php artisan migrate:rollback
+
+  # Войти в терминал MySQL контейнера
+  elif [ "$1" == "mysql" ]; then
+    docker-compose exec mysql bash -c "MYSQL_PWD=${MYSQL_PASSWORD} mysql -u ${MYSQL_USER} ${MYSQL_DATABASE}"
+
+  # Сделать дамп БД
+  elif [ "$1" == "make-mysql-dump" ]; then
+    docker-compose exec php-worker sh -c "mysqldump --no-tablespaces --compact -u ${MYSQL_USER} -p${MYSQL_PASSWORD} -h mysql ${MYSQL_DATABASE} | gzip > ${APP_BACKUP_PATH_CONTAINER}/dump.sql.gz"
+
+  # Войти в терминал Redis контейнера
+  elif [ "$1" == "redis" ]; then
+    docker-compose exec redis redis-cli
+
+  # Сгенерировать js языковые файлы на основе файлов перевода самого laravel
+  elif [ "$1" == "langjs" ] && [ "${APP_ENV}" == "dev" ]; then
+    docker-compose exec php-fpm php artisan lang:js --no-lib
+
+  # Сгенерировать файлы подсказок для IDE
+  elif [ "$1" == "ide-helper" ] && [ "${APP_ENV}" == "dev" ]; then
+    docker-compose exec php-fpm php artisan ide-helper:generate && \
+      docker-compose exec php-fpm php artisan ide-helper:meta
+
+  # Сделать бекап системы
+  elif [ "$1" == "make-backup" ]; then
+    docker-compose exec php-worker php "${APP_CODE_PATH_CONTAINER}"/artisan backup:run
+
+  # Авторизоваться в регистре образов GitLab
+  elif [ "$1" == "registry-login" ]; then
+    docker login registry.gitlab.com -u "${GITLAB_REQISTRY_USER}" -p "${GITLAB_REQISTRY_TOKEN}"
+
+  # Очистить OPCache (перезапустится контейнер с php-fpm)
+  elif [ "$1" == "opcache:clear" ]; then
+    docker-compose restart php-fpm
+
+  # Очистить весь кеш Laravel
+  elif [ "$1" == "optimize:clear" ]; then
+    docker-compose exec php-fpm php artisan optimize:clear
+
+  # Кеширование всех ресурсов Laravel (configs, routes, views, events)
+  elif [ "$1" == "optimize" ]; then
+    #&& docker-compose exec php-fpm php artisan route:cache \ нужно избавиться от mcamara/laravel-localization, чтобы можно было кешировать роуты
+    docker-compose exec php-fpm php artisan optimize:clear \
+    && docker-compose exec php-fpm php artisan config:cache \
+    && docker-compose exec php-fpm php artisan view:cache \
+    && docker-compose exec php-fpm php artisan event:cache
+
+  # Очистить OPCache и перезапустить очереди (необходимо выполнять после любого изменении в коде)
+  elif [ "$1" == "post-update" ]; then
+    docker-compose restart php-fpm \
+     && ./"$0" optimize \
+     && docker-compose restart php-fpm \
+     && ./"$0" worker-restart
+
+  # Включить режим поддержки (нужно при крупном обновлении системы)
+  elif [ "$1" == "maintenance:on" ]; then
+    docker-compose exec php-fpm php artisan down --refresh=15
+
+  # Отключить режим поддержки
+  elif [ "$1" == "maintenance:off" ]; then
+    docker-compose exec php-fpm php artisan up
+
+  # Запустить анализ кода с помощью larastan (phpstan)
+  elif [ "$1" == "code:analyze" ] && [ "${APP_ENV}" == "dev" ]; then
+    docker-compose exec php-fpm php /var/www/vendor/bin/phpstan analyse -c /var/www/phpstan.neon --memory-limit=2G
+
+  # Запускаем команду самого docker-compose
+  elif [ "$1" == "docker-compose" ] || [ "$1" == "compose" ]; then
+    shift 1
+
+    docker-compose "$@"
+
+  else
+    unknown_command_handler "$@"
+  fi
+else
+    unknown_command_handler "$@"
+fi
