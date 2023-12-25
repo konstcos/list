@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
 //    return 'ok';
-//    return response()->file(public_path('dist/index.html'));
-    return view('welcome');
+    return response()->file(public_path('dist/index.html'));
+//    return view('welcome');
 });
 
 Route::get('/test', function () {
