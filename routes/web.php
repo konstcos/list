@@ -13,8 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
+Route::get('/{any}', function () {
     return response()->file(public_path('dist/index.html'));
-//    return view('welcome');
-});
+})->where('any', '.*');
 

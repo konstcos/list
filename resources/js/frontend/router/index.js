@@ -10,6 +10,21 @@ const routes = [
     path: "/base",
     name: "base",
     component: () => import("../src/views/BaseView.vue"),
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: () => import("../src/views/LoginView.vue"),
+  },
+  {
+    path: "/wallets",
+    name: "wallets",
+    component: () => import("../src/views/WalletsView.vue"),
+  },
+  {
+    path: "/transactions",
+    name: "transactions",
+    component: () => import("../src/views/TransactionsView.vue"),
   }
 ];
 
