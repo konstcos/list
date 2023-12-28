@@ -1,0 +1,1 @@
+import{_ as o,o as s,c as t,a as e}from"./index-w1LPwXTY.js";const c={},_={class:"home"},n=e("h1",null,"Различные списки для удобства и прочего...",-1),a=e("div",null,"очень скоро будут",-1),r=[n,a];function d(i,l){return s(),t("div",_,r)}const f=o(c,[["render",d]]);export{f as default};

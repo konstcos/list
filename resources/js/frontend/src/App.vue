@@ -8,26 +8,29 @@
       <v-app-bar-title>Мои списки</v-app-bar-title>
 
       <template v-slot:append>
-<!--        <v-btn icon="mdi:mdi-dots-vertical"></v-btn>-->
+        <!--        <v-btn icon="mdi:mdi-dots-vertical"></v-btn>-->
 
+        <div>
+          <b>{{ user.name }}</b>
+        </div>
 
         <v-menu v-if="isLoggedIn()">
           <template v-slot:activator="{ props }">
-            <v-btn icon="mdi:mdi-account" v-bind="props"></v-btn>
+            <v-btn :loading="checkAuthLoading" icon="mdi:mdi-account" v-bind="props"></v-btn>
           </template>
 
           <v-list>
             <v-list-item
               prepend-icon="mdi:mdi-logout"
               title="Выйти"
-              @click="clearUser()"
+              @click="logoutUser()"
             ></v-list-item>
           </v-list>
 
         </v-menu>
 
-        <v-btn v-else icon="mdi:mdi-login" to="/login"></v-btn>
-<!--        <v-btn icon="mdi:mdi-logout"></v-btn>-->
+        <v-btn v-else icon="mdi:mdi-login" :loading="checkAuthLoading" to="/login"></v-btn>
+        <!--        <v-btn icon="mdi:mdi-logout"></v-btn>-->
       </template>
 
     </v-app-bar>
@@ -80,7 +83,7 @@
 
     <v-main>
       <v-container fluid>
-        <router-view />
+        <router-view v-if="!checkAuthLoading" />
       </v-container>
     </v-main>
 
@@ -90,20 +93,56 @@
 
 <script>
 import useUser from './entities/UserEntity.js';
+import LoginRepository from "./repositories/auth/LoginRepository.js";
+
 export default {
   name: 'App',
   setup() {
-    const {isLoggedIn, clearUser} = useUser();
+    const {isLoggedIn, user} = useUser();
+    const loginRepository = new LoginRepository();
     return {
       isLoggedIn,
-      clearUser,
+      loginRepository,
+      user,
     };
   },
   data() {
     return {
       drawer: true,
       rail: false,
+      checkAuthLoading: true,
     }
+  },
+  methods: {
+    async clearUser() {
+      this.loginRepository.logout();
+    },
+    async checkAuth() {
+      this.checkAuthLoading = true;
+      await this.loginRepository.checkAuth();
+      this.checkAuthLoading = false;
+
+      if (this.$route.name === 'login' && this.isLoggedIn()) {
+        this.$router.push({name: 'home'});
+      }
+
+      if ((
+          this.$route.name === 'wallets' ||
+          this.$route.name === 'transactions'
+        ) &&
+        !this.isLoggedIn()
+      ) {
+        this.$router.push({name: 'home'});
+      }
+    },
+    logoutUser() {
+      this.loginRepository.logout();
+      this.$router.push({name: 'home'});
+    }
+  },
+  mounted() {
+    this.checkAuth();
+
   }
 }
 </script>

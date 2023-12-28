@@ -1,0 +1,1 @@
+import{_ as s,o,c as t,a as e}from"./index-b4HkFqwi.js";const n={name:"TransactionsView"},a=e("h1",null,"Денежные переводы",-1),c=e("div",null," Список транзакций ",-1),r=[a,c];function _(i,d,l,p,u,f){return o(),t("div",null,r)}const m=s(n,[["render",_]]);export{m as default};

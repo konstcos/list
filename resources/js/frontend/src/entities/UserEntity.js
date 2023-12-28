@@ -5,21 +5,35 @@ const state = reactive({
     email: null,
     name: null,
     token: null,
+    isLoggedIn: false,
   },
 });
 
 export default function useUser() {
   const setUser = (user) => {
-    state.user.email = user.email;
-    state.user.name = user.name;
+    state.user.email = user['email'];
+    state.user.name = user['name']
   };
 
   const setToken = (token) => {
+    localStorage.setItem('auth_token', token);
     state.user.token = token;
   }
 
+  const getToken = () => {
+    if (!state.user.token) {
+      const localStorageToken = localStorage.getItem('auth_token');
+      state.user.token = localStorageToken ? localStorageToken : null;
+    }
+    return state.user.token;
+  }
+
+  const setLogged = (loginState = false) => {
+    state.user.isLoggedIn = loginState;
+  }
+
   const isLoggedIn = () => {
-    return !!state.user.token;
+    return state.user.isLoggedIn;
   };
 
   const clearUser = () => {
@@ -27,7 +41,9 @@ export default function useUser() {
       email: null,
       name: null,
       token: null,
+      isLoggedIn: false,
     };
+    localStorage.removeItem('auth_token');
   };
 
   return {
@@ -36,5 +52,7 @@ export default function useUser() {
     clearUser,
     setToken,
     isLoggedIn,
+    getToken,
+    setLogged,
   };
 }

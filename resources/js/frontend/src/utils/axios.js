@@ -1,4 +1,9 @@
 import axios from "axios";
+import useUser from "../entities/UserEntity.js";
+
+const {getToken} = useUser();
+
+const rootDomain = window.location.hostname;
 
 const defaultTransformers = () => {
   const {transformRequest} = axios.defaults;
@@ -12,8 +17,7 @@ const defaultTransformers = () => {
 };
 
 const config = {
-  // baseURL: import.meta.env.MODE === 'production' ? 'https://api.example.com' : 'http://localhost:8000',
-  baseURL: 'https://list.loc/api',
+  baseURL: import.meta.env.MODE === 'production' ? `https://${rootDomain}/api/v1` : 'https://list.loc/api/v1',
   method: 'post',
   headers: {
     'Accept': 'application/json',
@@ -21,7 +25,8 @@ const config = {
   },
   transformRequest: [
     (data, headers) => {
-      const token = null; // get token from local storage or where ever you have stored it.
+      const token = getToken();
+      // const token = null;
 
       if (token) {
         data.token = token;
