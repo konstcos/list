@@ -29,7 +29,7 @@ const config = {
       // const token = null;
 
       if (token) {
-        data.token = token;
+        // data.token = token;
         headers['Authorization'] = 'Bearer ' + token;
       }
 
