@@ -19,9 +19,11 @@ const defaultTransformers = () => {
 const config = {
   baseURL: import.meta.env.MODE === 'production' ? `https://${rootDomain}/api/v1` : 'https://list.loc/api/v1',
   method: 'post',
+  withCredentials: true,
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
   },
   transformRequest: [
     (data, headers) => {
