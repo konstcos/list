@@ -23,6 +23,7 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "Wallets\\": "domains/wallets/src/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

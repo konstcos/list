@@ -27,6 +27,8 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function() {
         Route::match(['post', 'option'], '/user', [UserController::class, 'userData'])->name('userData');
         Route::match(['post', 'option'], '/logout', [AuthController::class, 'logout'])->name('logout');
+
+        require_once __DIR__ . '/../domains/wallets/routes/wallet.routes.php';
     });
 });
 

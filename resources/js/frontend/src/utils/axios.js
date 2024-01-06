@@ -20,6 +20,7 @@ const config = {
   baseURL: import.meta.env.MODE === 'production' ? `https://${rootDomain}/api/v1` : 'https://list.loc/api/v1',
   method: 'post',
   withCredentials: true,
+  credentials: 'include',
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json',

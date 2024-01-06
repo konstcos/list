@@ -9,6 +9,14 @@ use Illuminate\Http\Request;
 
 class UserController extends BaseController
 {
+    /**
+     * Получить данные пользователя.
+     *
+     * Этот метод получает данные пользователя.
+     *
+     * @param  Request  $request  Запрос с информацией о пользователе.
+     * @return JsonResponse  JSON-ответ с данными пользователя.
+     */
     public function userData(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,3 +30,4 @@ class UserController extends BaseController
         ]);
     }
 }
+
