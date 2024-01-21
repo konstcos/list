@@ -29,7 +29,6 @@ const config = {
   transformRequest: [
     (data, headers) => {
       const token = getToken();
-      // const token = null;
 
       if (token) {
         // data.token = token;
