@@ -48,6 +48,40 @@ class WalletUseCase
         ];
     }
 
+
+    public function getUserWalletDetail(int $userId, int $walletId)
+    {
+
+        try {
+            $wallet = $this->walletDataService->getUserWalletWithPublicData($userId, $walletId);
+        } catch (\Exception $e) {
+            return [
+                'status' => 'fail',
+                'info' => 'error getting user wallet',
+                'data' => [
+                    'error' => $e->getMessage(),
+                ],
+            ];
+        }
+
+        if (!$wallet) {
+            return [
+                'status' => 'fail',
+                'info' => 'wrong wallet id',
+                'data' => [],
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'info' => 'user wallet',
+            'data' => [
+                'wallet' => $wallet,
+            ],
+        ];
+    }
+
+
     public function saveUserWallet(WalletEntityDTO $dto)
     {
 
@@ -73,8 +107,22 @@ class WalletUseCase
 
     public function deleteUserWallet(int $userId, int $walletId)
     {
-        return [
+        try {
+            $this->walletRepository->deleteUserWallet($userId, $walletId);
+        } catch (\Exception $e) {
+            return [
+                'status' => 'fail',
+                'info' => 'error deleting user wallet',
+                'data' => [
+                    'error' => $e->getMessage(),
+                ],
+            ];
+        }
 
+        return [
+            'status' => 'success',
+            'info' => 'user wallet deleted',
+            'data' => [],
         ];
     }
 }

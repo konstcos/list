@@ -46,6 +46,36 @@ class WalletDataService
         return $wallets;
     }
 
+    public function getUserWalletWithPublicData($userId, $walletId): array {
+
+        $userDBWallet = $this->walletRepository->getUserWalletWithFullData($userId, $walletId);
+        
+        if (!$userDBWallet) {
+            return false;
+        }
+
+        return [
+            'id' => $userDBWallet['id'],
+            'name' => $userDBWallet['name'],
+            'description' => $userDBWallet['description'],
+            'balance' => $userDBWallet['balance'],
+            'currency' => $userDBWallet['currency'],
+            'privateComment' => $userDBWallet['private_comment'],
+            'comment' => $userDBWallet['comment'],
+            'createdAt' => $userDBWallet['created_at'],
+            'updatedAt' => $userDBWallet['updated_at'],
+            'deletedAt' => $userDBWallet['deleted_at'],
+            'user' => [
+                'id' => $userDBWallet['user_id'],
+                // 'name' => $userDBWallet['user_name'],
+            ],
+            'owner' => [
+                'id' => $userDBWallet['owner_id'],
+                // 'name' => $userDBWallet['owner_name'],
+            ],
+        ];
+    }
+
     public function getWalletPublicData(WalletEntity $wallet)
     {
         $walletData = [

@@ -7,12 +7,14 @@
                     <span class="headline">Создание нового кошелька</span>
                 </v-card-title>
                 <v-card-text v-if="modalOpen">
+                    
+                    <div v-if="loading">
+                        <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                    </div>
+
                     <div v-if="wallet">
                         <v-text-field v-model="wallet.name" label="Name"></v-text-field>
                         <v-textarea v-model="wallet.description" label="Description"></v-textarea>
-                    </div>
-                    <div v-else>
-                        загрузка...
                     </div>
 
                 </v-card-text>
@@ -22,7 +24,6 @@
 
                     <v-spacer></v-spacer>
                     <v-btn density="compact" color="primary" @click="saveWallet">Сохранить</v-btn>
-                    <!-- Added save button -->
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -31,6 +32,7 @@
 
 <script>
 import WalletRepository from "../repositories/WalletRepository.js";
+import WalletUseCase from "../use_case/WalletUseCase";
 import WalletEntity from "../entities/WalletEntity.js";
 
 
@@ -38,7 +40,8 @@ export default {
     name: 'WalletEditor',
     setup() {
         const walletRepository = new WalletRepository();
-        return { walletRepository };
+        const walletUseCase = new WalletUseCase();
+        return { walletRepository, walletUseCase };
     },
     props: {
         modelValue: {
@@ -54,6 +57,7 @@ export default {
         return {
             modalOpen: this.value,
             wallet: null,
+            loading: true,
         }
     },
     watch: {
@@ -66,7 +70,6 @@ export default {
         },
         modalOpen(newValue) {
             if (newValue) {
-                console.log('mounted');
                 this.loadWalletData();
             }
         }
@@ -85,10 +88,11 @@ export default {
          * Сохраняет кошелек.
          */
         async saveWallet() {
-            console.log('saveWallet', this.wallet);
+            this.loading = true;
             const result = await this.walletRepository.saveWallet(this.wallet);
-            console.log('result', result);
-            // this.closeModal();
+            this.loading = false;
+            this.$emit('reload');
+            this.closeModal();
 
         },
 
@@ -101,12 +105,26 @@ export default {
             }
         },
 
+        async getWalletData() {
+            this.wallet = null;
+            this.loading = true;
+
+            const result = await this.walletUseCase.getWalletDetail(this.walletId);
+            if (result === false) {
+                alert('Ошибка при загрузке данных кошелька');
+            } else {
+                this.wallet = result;
+            }
+
+            this.loading = false;
+        },
+
         loadWalletData() {
             if (this.walletId === 0) {
-                console.log('loadWalletData new wallet', this.walletId);
                 this.wallet = new WalletEntity();
+                this.loading = false;
             } else {
-                console.log('loadWalletData', this.walletId);
+                this.getWalletData();
             }
         }
 

@@ -23,6 +23,20 @@ class WalletController extends BaseController
         ]);
     }
 
+
+    public function userWalletDetail(Request $request, WalletUseCase $walletUseCase): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $walletId = $request->integer('wallet_id');
+        $result = $walletUseCase->getUserWalletDetail($userId, $walletId);
+
+        return response()->json([
+            'status' => $result['status'],
+            'info' => $result['info'],
+            'data' => $result['data'],
+        ]);
+    }
+
     public function saveUserWallet(Request $request, WalletUseCase $walletUseCase): JsonResponse
     {
         if (trim($request->input('name')) === '') {
@@ -45,6 +59,19 @@ class WalletController extends BaseController
             'ownerId' => $request->user()->id,
         ]);
         $result = $walletUseCase->saveUserWallet($dto);
+
+        return response()->json([
+            'status' => $result['status'],
+            'info' => $result['info'],
+            'data' => $result['data'],
+        ]);
+    }
+
+    public function deleteUserWallet(Request $request, WalletUseCase $walletUseCase): JsonResponse
+    {
+        $userId = $request->user()->id;
+        $walletId = $request->integer('wallet_id');
+        $result = $walletUseCase->deleteUserWallet($userId, $walletId);
 
         return response()->json([
             'status' => $result['status'],

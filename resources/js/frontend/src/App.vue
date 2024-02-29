@@ -67,6 +67,13 @@
           value="transactions"
           to="/transactions"
         />
+<!--        <v-list-item-->
+<!--          v-if="isLoggedIn()"-->
+<!--          prepend-icon="mdi:mdi-cash-fast"-->
+<!--          title="Линки"-->
+<!--          value="transactions"-->
+<!--          to="/transactions"-->
+<!--        />-->
       </v-list>
 
       <template v-slot:append>

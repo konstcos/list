@@ -9,16 +9,23 @@ Route::group(['prefix' => 'wallet'], function () {
         '/user-wallets',
         [WalletController::class, 'userWallets']
     )->name('userWallets');
-});
 
-Route::group(['prefix' => 'wallet'], function () {
+    Route::match(
+        ['post', 'option'],
+        '/detail',
+        [WalletController::class, 'userWalletDetail']
+    )->name('userWalletDetail');
+
     Route::match(
         ['post', 'option'],
         '/save',
         [WalletController::class, 'saveUserWallet']
     )->name('saveUserWallet');
+
+    Route::match(
+        ['post', 'option'],
+        '/delete',
+        [WalletController::class, 'deleteUserWallet']
+    )->name('deleteUserWallet');
+
 });
-
-
-
-

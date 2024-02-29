@@ -32,4 +32,28 @@ export default class WalletRepository {
       return false;
     }
   }
+
+  async getWalletDetail(walletId) {
+    try {
+      const result = await walletApi.getWalletDetail(walletId);
+      if (result['status'] === 'success') {
+        return result;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async deleteWallet(walletId) {
+    try {
+      const result = await walletApi.deleteWallet(walletId);
+      if (result['status'] === 'success') {
+        return result;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+  }
 }

@@ -48,9 +48,41 @@ class WalletRepository
     }
 
 
-    public function getUserWalletsWithFullData($userId): array
+    public function getUserWalletWithFullData($userId, $walletId): ?Wallet
     {
 
+        $wallet = Wallet::query()->select(
+            'wallets.id',
+            'wallets.name',
+            'wallets.description',
+            'wallets.balance',
+            'wallets.currency',
+            'wallets.private_comment',
+            'wallets.comment',
+            'wallets.created_at',
+            'wallets.updated_at',
+            'wallets.deleted_at',
+            'wallet_users.user_id',
+            // 'users.name as owner_name'
+            DB::raw('wallet_owner.user_id as owner_id'),
+        )
+            ->join('wallet_users', 'wallets.id', '=', 'wallet_users.wallet_id')
+            ->join('users', 'wallet_users.user_id', '=', 'users.id')
+            ->join('wallet_users as wallet_owner', function ($join) {
+                $join->on('wallets.id', '=', 'wallet_owner.wallet_id')
+                    ->where('wallet_owner.is_owner', '=', true);
+            })
+            
+            ->where('wallet_users.user_id', '=', $userId)
+            ->where('wallets.id', '=', $walletId)
+            ->first();
+
+
+        return $wallet;
+    }
+
+    public function getUserWalletsWithFullData($userId): array
+    {
         $wallets = Wallet::query()->select(
             'wallets.id',
             'wallets.name',
@@ -133,6 +165,34 @@ class WalletRepository
             ],
         ];
 
+    }
+
+    public function deleteUserWallet($userId, $walletId): array
+    {
+        $wallet = Wallet::query()->find($walletId);
+        $walletUsers = WalletUser::query()->where('wallet_id', '=', $wallet->id)
+            ->where('user_id', '=', $userId)
+            ->get();
+
+        if ($wallet === null) {
+            return [
+                'status' => 'fail',
+                'info' => 'wrong wallet id',
+                'data' => [],
+            ];
+        }
+
+        foreach ($walletUsers as $walletUser) {
+            $walletUser->delete();
+        }
+
+        $wallet->delete();
+
+        return [
+            'status' => 'success',
+            'info' => 'wallet deleted',
+            'data' => [],
+        ];
     }
 
 }

@@ -10,6 +10,18 @@ export default {
 
   /**
    * 
+   * @param number walletId 
+   * @returns 
+   */
+  async getWalletDetail(walletId) {
+    const result =  await axios.post('wallet/detail', {
+      wallet_id: walletId
+    });
+    return result.data;
+  },
+
+  /**
+   * 
    * @param WalletEntity wallet 
    * @returns 
    */
@@ -17,4 +29,11 @@ export default {
     const result =  await axios.post('wallet/save', wallet);
     return result.data;
   },
+
+  async deleteWallet(walletId) {
+    const result =  await axios.post('wallet/delete', {
+      wallet_id: walletId
+    });
+    return result.data;
+  }
 }
