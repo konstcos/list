@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
         Route::match(['post', 'option'], '/logout', [AuthController::class, 'logout'])->name('logout');
 
         require_once __DIR__ . '/../domains/wallets/routes/wallet.routes.php';
+        require_once __DIR__ . '/../domains/links/routes/links.routes.php';
     });
 });
 

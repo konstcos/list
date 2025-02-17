@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Controller;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,5 @@ Route::get('/{any}', function () {
     return response()->file(public_path('dist/index.html'));
 })->where('any', '.*');
 
+
+//Route::get('test', [Controller::class, 'test']);

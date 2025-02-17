@@ -3,6 +3,13 @@
 namespace Wallets\Entities;
 use Wallets\Entities\DTO\WalletEntityDTO;
 
+/**
+ * Class WalletEntity
+ * Класс WalletEntity представляет сущность кошелька.
+ * Он содержит информацию о кошельке, такую как идентификатор, баланс и валюта.
+ * Класс предоставляет методы для получения и установки значений свойств кошелька.
+ * 
+ */
 class WalletEntity
 {
     public ?int $id;

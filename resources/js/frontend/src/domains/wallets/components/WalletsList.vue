@@ -89,7 +89,7 @@ export default {
   name: "WalletsList",
   setup() {
     const walletRepository = new WalletRepository();
-    const walletUseCase = new WalletUseCase(walletRepository);
+    const walletUseCase = new WalletUseCase();
     return { walletRepository, walletUseCase };
   },
   components: {

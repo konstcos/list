@@ -28,7 +28,12 @@ const routes = [
     path: "/transactions",
     name: "transactions",
     component: () => import("../views/TransactionsView.vue"),
-  }
+  },
+  {
+    path: "/links",
+    name: "links",
+    component: () => import("../views/LinksView.vue"),
+  },
 ];
 
 const router = createRouter({
