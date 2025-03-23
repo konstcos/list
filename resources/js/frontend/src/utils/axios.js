@@ -4,6 +4,11 @@ import useUser from "../entities/UserEntity.js";
 const {getToken} = useUser();
 
 const rootDomain = window.location.hostname;
+let scheme = window.location.protocol;
+
+if (rootDomain === 'localhost') {
+  scheme = 'https:';
+}
 
 const defaultTransformers = () => {
   const {transformRequest} = axios.defaults;
@@ -16,8 +21,10 @@ const defaultTransformers = () => {
   }
 };
 
+console.log(scheme)
+
 const config = {
-  baseURL: import.meta.env.MODE === 'production' ? `https://${rootDomain}/api/v1` : 'https://list.loc/api/v1',
+  baseURL: import.meta.env.MODE === 'production' ? `${scheme}//${rootDomain}/api/v1` : `${scheme}//list.loc/api/v1`,
   method: 'post',
   withCredentials: true,
   credentials: 'include',

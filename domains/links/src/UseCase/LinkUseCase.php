@@ -41,11 +41,11 @@ class LinkUseCase
     }
 
 
-    public function createOrUpdateLink(int $userId, string $link): array
+    public function createOrUpdateLink(int $userId, string $link, int $linkId=null): array
     {
 
         try {
-            $result = $this->linkRepository->createOrUpdateLink($userId, $link);
+            $result = $this->linkRepository->createOrUpdateLink($userId, $link, $linkId);
         } catch (\Exception $e) {
             return [
                 'status' => 'fail',

@@ -21,12 +21,27 @@ class LinkController extends BaseController
         ]);
     }
 
+    public function linkDetail(Request $request, LinkUseCase $useCase): JsonResponse
+    {
+        $linkId = $request->link_id;
+
+        return response()->json(
+            [
+                'status' => 'success',
+                'info' => 'okey',
+                'data' => [
+                    'link' => $linkId
+                ]
+            ]
+        );
+    }
 
     public function createOrUpdateLink(Request $request, LinkUseCase $useCase): JsonResponse
     {
         $userId = $request->user()->id;
+        $linkId = $request->link_id;
         $link = $request->link;
-        $result = $useCase->createOrUpdateLink($userId, $link);
+        $result = $useCase->createOrUpdateLink($userId, $link, $linkId);
 
         return response()->json(
             [

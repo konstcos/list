@@ -34,11 +34,16 @@ class LinkRepository
         return $links;
     }
 
-    public function createOrUpdateLink(int $userId, string $url): array
+    public function createOrUpdateLink(int $userId, string $url, int $linkId=null): array
     {
-        $link = Link::where('user_id', $userId)
-            ->where('link', $url)
-            ->first();
+        $link = null;
+        if ($linkId) {
+            $link = Link::find($linkId);
+        }
+
+//        $link = Link::where('user_id', $userId)
+//            ->where('link', $url)
+//            ->first();
 
         if (!$link) {
             $link = new Link();
