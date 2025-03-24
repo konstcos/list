@@ -47,7 +47,7 @@
               <v-btn
                 class="ml-3"
                 size="x-small"
-                @click="openLinkEditor(link.id)"
+                @click="openLinkEditor(link)"
                 :disabled="loading"
                 density="compact"
                 variant="text"
@@ -71,7 +71,7 @@
 
     </div>
 
-    <LinkEditor v-model="linkEditorModal.show" :link-id="linkEditorModal.linkId" @reload="loadLinks()"/>
+    <LinkEditor v-model="linkEditorModal.show" :link="linkEditorModal.link" @reload="loadLinks()"/>
 
     <v-dialog v-model="deleteLinkModal.show" max-width="500px" @click="deleteLinkModal.show = false">
       <v-card>
@@ -89,7 +89,7 @@
           <v-btn density="compact" color="primary" @click="deleteLinkModal.show = false">Закрыть</v-btn>
 
           <v-spacer></v-spacer>
-          <v-btn density="compact" color="error" @click="saveLink">Удалить</v-btn>
+          <v-btn density="compact" color="error" @click="deleteLink">Удалить</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -100,6 +100,7 @@
 <script>
 import LinksUseCase from "../domains/links/use_case/LinksUseCase.js";
 import LinkEditor from "../domains/links/components/LinkEditor.vue";
+import LinkEntity from "../domains/links/entities/LinkEntity.js";
 
 export default {
   name: "Links",
@@ -117,11 +118,11 @@ export default {
       newLink: null,
       linkEditorModal: {
         show: false,
-        linkId: 0
+        link: {}
       },
       deleteLinkModal: {
         show: false,
-        linkId: 0
+        link: null
       },
     }
   },
@@ -131,12 +132,19 @@ export default {
         return false;
       }
 
-      await this.linksUseCase.saveLink(this.newLink);
+
+
+      await this.linksUseCase.saveLink(new LinkEntity({
+        id: 0,
+        link: this.newLink
+      }));
+      this.newLink = null;
 
       this.loadLinks();
     },
-    openLinkEditor(linkId = 0) {
-      this.linkEditorModal.linkId = linkId;
+    openLinkEditor(link = null) {
+      this.linkEditorModal.link = link || new LinkEntity();
+
       this.linkEditorModal.show = true;
     },
     async loadLinks() {
@@ -145,8 +153,17 @@ export default {
       this.loading = false;
     },
     openDeleteLinkModal(link) {
-      this.deleteLinkModal.linkId = link.id;
+      this.deleteLinkModal.link = link;
       this.deleteLinkModal.show = true;
+    },
+    async deleteLink() {
+      if (this.deleteLinkModal && !this.deleteLinkModal.link) {
+        return false;
+      }
+
+      await this.linksUseCase.deleteLink(this.deleteLinkModal.link);
+
+      this.loadLinks();
     },
   },
   mounted() {

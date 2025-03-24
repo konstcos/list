@@ -24,6 +24,7 @@ class LinkRepository
             )
             ->where('links.user_id', '=', $userId)
             ->orderBy('id', 'desc')
+            ->whereNull('deleted_at')
             ->get()
             ->toArray();
 
@@ -34,11 +35,11 @@ class LinkRepository
         return $links;
     }
 
-    public function createOrUpdateLink(int $userId, string $url, int $linkId=null): array
+    public function createOrUpdateLink(int $userId, string $url, int $linkId=null): mixed
     {
         $link = null;
         if ($linkId) {
-            $link = Link::find($linkId);
+            $link = Link::where('user_id', $userId)->find($linkId);
         }
 
 //        $link = Link::where('user_id', $userId)
@@ -56,5 +57,15 @@ class LinkRepository
         return $link;
     }
 
+    public function deleteLink(int $userId, int $linkId): mixed
+    {
+        $link = Link::where('user_id', $userId)->find($linkId);
+
+        if ($link) {
+            $link->delete();
+        }
+
+        return true;
+    }
 
 }

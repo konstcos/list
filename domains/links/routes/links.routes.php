@@ -17,6 +17,12 @@ Route::group(['prefix' => 'links'], function () {
         [LinkController::class, 'createOrUpdateLink']
     )->name('userLinks');
 
+    Route::match(
+        ['post', 'option'],
+        '/delete-link',
+        [LinkController::class, 'deleteLink']
+    )->name('userLinks');
+
 
 
 });

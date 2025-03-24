@@ -39,7 +39,7 @@ class LinkController extends BaseController
     public function createOrUpdateLink(Request $request, LinkUseCase $useCase): JsonResponse
     {
         $userId = $request->user()->id;
-        $linkId = $request->link_id;
+        $linkId = $request->id;
         $link = $request->link;
         $result = $useCase->createOrUpdateLink($userId, $link, $linkId);
 
@@ -51,12 +51,18 @@ class LinkController extends BaseController
         );
     }
 
-    public function deleteLink(Request $request): JsonResponse
+    public function deleteLink(Request $request, LinkUseCase $useCase): JsonResponse
     {
+
+        $userId = $request->user()->id;
+        $linkId = $request->link_id;
+        $result = $useCase->deleteLink($userId, $linkId);
 
         return response()->json(
             [
-                'message' => 'User links'
+                'status' => $result['status'],
+                'info' => $result['info'],
+                'data' => $result['data'],
             ]
         );
     }

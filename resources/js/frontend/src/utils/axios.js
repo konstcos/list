@@ -21,8 +21,6 @@ const defaultTransformers = () => {
   }
 };
 
-console.log(scheme)
-
 const config = {
   baseURL: import.meta.env.MODE === 'production' ? `${scheme}//${rootDomain}/api/v1` : `${scheme}//list.loc/api/v1`,
   method: 'post',

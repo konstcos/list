@@ -19,4 +19,12 @@ export default class WalletRepository {
     }
   }
 
+  async deleteLink(link) {
+    try {
+      return await linksApi.deleteLink(link);
+    } catch (error) {
+      return false;
+    }
+  }
+
 }

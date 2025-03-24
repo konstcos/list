@@ -10,7 +10,15 @@ export default {
 
   async saveLink(link) {
     const result =  await axios.post('links/save-link', {
-      link: link,
+      id: link.id,
+      link: link.link,
+    });
+    return result.data;
+  },
+
+  async deleteLink(link) {
+    const result =  await axios.post('links/delete-link', {
+      link_id: link.id,
     });
     return result.data;
   },

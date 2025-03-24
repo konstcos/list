@@ -59,8 +59,29 @@ class LinkUseCase
         return [
             'status' => 'success',
             'info' => 'user links',
+            'data' => [],
+        ];
+    }
+
+    public function deleteLink(int $userId, int $linkId): array
+    {
+
+        try {
+            $result = $this->linkRepository->deleteLink($userId, $linkId);
+        } catch (\Exception $e) {
+            return [
+                'status' => 'fail',
+                'info' => 'error getting user links',
+                'data' => [
+                    'error' => $e->getMessage(),
+                ],
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'info' => 'delete link successfully',
             'data' => [
-                'links' => $links,
             ],
         ];
     }

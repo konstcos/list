@@ -31,8 +31,16 @@ export default class LinksUseCase {
 
     async saveLink(link) {
         try {
-            const result = await this.linksRepository.saveLink(link);
-            return result;
+            return await this.linksRepository.saveLink(link);
+        } catch (error) {
+            return false;
+        }
+    }
+
+
+    async deleteLink(link) {
+        try {
+            return await this.linksRepository.deleteLink(link);
         } catch (error) {
             return false;
         }
