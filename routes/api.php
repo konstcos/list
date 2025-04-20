@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
 
         require_once __DIR__ . '/../domains/wallets/routes/wallet.routes.php';
         require_once __DIR__ . '/../domains/links/routes/links.routes.php';
+        require_once __DIR__ . '/../domains/taxonomy/routes/taxonomy.routes.php';
     });
 });
 

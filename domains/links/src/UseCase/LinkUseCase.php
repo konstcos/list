@@ -44,6 +44,27 @@ class LinkUseCase
     public function createOrUpdateLink(int $userId, string $link, int $linkId=null): array
     {
 
+        if (! filter_var($link, FILTER_VALIDATE_URL)) {
+            return [
+                'status' => 'fail',
+                'info' => 'wrong_url_format',
+                'data' => [
+                    'error' => 'wrong url format',
+                ],
+            ];
+        }
+
+        $checkIsLinkExists = $this->linkRepository->isLinkExists($userId, $link);
+        if ($checkIsLinkExists) {
+            return [
+                'status' => 'fail',
+                'info' => 'link_already_exists',
+                'data' => [
+                    'error' => 'link already exists',
+                ],
+            ];
+        }
+
         try {
             $result = $this->linkRepository->createOrUpdateLink($userId, $link, $linkId);
         } catch (\Exception $e) {

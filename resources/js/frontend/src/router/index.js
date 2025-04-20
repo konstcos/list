@@ -34,6 +34,11 @@ const routes = [
     name: "links",
     component: () => import("../views/LinksView.vue"),
   },
+  {
+    path: "/categories",
+    name: "categories",
+    component: () => import("../views/CategoriesView.vue"),
+  },
 ];
 
 const router = createRouter({
@@ -54,7 +59,8 @@ router.beforeEach((to, from, next) => {
   if (!isLoggedIn()) {
     if (
       to.name === 'wallets' ||
-      to.name === 'transactions'
+      to.name === 'transactions' ||
+      to.name === 'links'
     ) {
       next({name: 'home'});
     } else {

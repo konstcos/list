@@ -40,13 +40,42 @@
       :rail="rail"
       permanent
     >
-      <v-list density="compact" nav="">
+      <v-list
+        v-model:opened="open"
+        density="compact"
+        nav>
         <v-list-item
           prepend-icon="mdi:mdi-home-city"
           title="Home"
           value="home"
           to="/"
         />
+
+        <v-list-group
+          v-if="isLoggedIn()"
+          value="Tagging"
+        >
+
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              prepend-icon="mdi:mdi-tag-multiple"
+              title="Tagging"
+            />
+
+          </template>
+
+          <v-list-item
+            title="Categories"
+            value="categories"
+            to="/categories"
+          />
+
+        </v-list-group>
+
+
+
+
         <v-list-item
           prepend-icon="mdi:mdi-file-cabinet"
           title="Base"
@@ -113,14 +142,21 @@ export default {
       user,
     };
   },
-  data() {
-    return {
+  data: () => ({
+      open: ['Tagging'],
+      taggingOpen: true,
       drawer: true,
       rail: false,
       checkAuthLoading: true,
-    }
-  },
+  }),
   methods: {
+    preventGroupClose(val) {
+      if (!val.includes('Tagging')) {
+        this.open = [...val, 'Tagging']
+      } else {
+        this.open = val
+      }
+    },
     async clearUser() {
       this.loginRepository.logout();
     },

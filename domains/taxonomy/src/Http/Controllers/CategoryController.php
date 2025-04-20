@@ -1,18 +1,18 @@
 <?php
 
-namespace Links\Http\Controllers;
+namespace Taxonomy\Http\Controllers;
 
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Links\UseCase\LinkUseCase;
+use Taxonomy\UseCase\CategoryUseCase;
 
-class LinkController extends BaseController
+class CategoryController extends BaseController
 {
-    public function userLinks(Request $request, LinkUseCase $useCase): JsonResponse
+    public function userCategories(Request $request, CategoryUseCase $useCase): JsonResponse
     {
         $userId = $request->user()->id;
-        $result = $useCase->receiveAllUserLinks($userId);
+        $result = $useCase->receiveAllUserCategories($userId);
 
         return response()->json([
             'status' => $result['status'],
@@ -21,7 +21,7 @@ class LinkController extends BaseController
         ]);
     }
 
-    public function linkDetail(Request $request, LinkUseCase $useCase): JsonResponse
+    public function linkDetail(Request $request, CategoryUseCase $useCase): JsonResponse
     {
         $linkId = $request->link_id;
 
@@ -36,28 +36,29 @@ class LinkController extends BaseController
         );
     }
 
-    public function createOrUpdateLink(Request $request, LinkUseCase $useCase): JsonResponse
+    public function createOrUpdateCategory(Request $request, CategoryUseCase $useCase): JsonResponse
     {
         $userId = $request->user()->id;
-        $linkId = $request->id;
-        $link = $request->link;
-        $result = $useCase->createOrUpdateLink($userId, $link, $linkId);
+        $categoryId = $request->id;
+        $slug = $request->slug;
+        $title = $request->title;
+        $description = $request->description ?? '';
+        $result = $useCase->createOrUpdateCategory($userId, $slug, $title, $description, $categoryId);
 
         return response()->json(
             [
-                'status' => $result['status'],
-                'info' => $result['info'],
-                'data' => $result['data'],
+                'status' => 'success',
+                'message' => $result
             ]
         );
     }
 
-    public function deleteLink(Request $request, LinkUseCase $useCase): JsonResponse
+    public function deleteCategory(Request $request, CategoryUseCase $useCase): JsonResponse
     {
 
         $userId = $request->user()->id;
-        $linkId = $request->link_id;
-        $result = $useCase->deleteLink($userId, $linkId);
+        $categoryId = $request->category_id;
+        $result = $useCase->deleteCategory($userId, $categoryId);
 
         return response()->json(
             [

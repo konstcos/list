@@ -4,54 +4,79 @@ namespace Links\Repositories;
 
 use Illuminate\Support\Facades\DB;
 use Links\Models\Link;
+use Core\Models\Material;
+use Illuminate\Support\Str;
 
 
 class LinkRepository
 {
 
+    private int $moduleId = 1;
 
     public function receiveAllUserLinks(int $userId): array
     {
         $links = [];
-        $userLinks = DB::table('links')
-            ->select(
-                'links.id',
-                'links.user_id',
-                'links.link',
-                'links.created_at',
-                'links.updated_at',
-                'links.deleted_at',
-            )
-            ->where('links.user_id', '=', $userId)
+        $userLinks = Material::query()
+            ->where('module_id', $this->moduleId)
+            ->where('user_id', '=', $userId)
             ->orderBy('id', 'desc')
-            ->whereNull('deleted_at')
-            ->get()
-            ->toArray();
+            ->get();
 
         foreach ($userLinks as $userLink) {
-            $links[] = $userLink;
+            $links[] = [
+                'id' => $userLink->id,
+                'user_id' => $userLink->user_id,
+                'link' => $userLink->short_content,
+                'created_at' => $userLink->created_at,
+                'updated_at' => $userLink->updated_at,
+                'deleted_at' => $userLink->deleted_at,
+            ];
         }
 
         return $links;
+    }
+
+    public function isLinkExists(int $userId, string $url): bool
+    {
+        return $checkIsLinkExists = Material::query()
+            ->where('module_id', $this->moduleId)
+            ->where('user_id', $userId)
+            ->where('short_content', $url)
+            ->exists();
+
     }
 
     public function createOrUpdateLink(int $userId, string $url, int $linkId=null): mixed
     {
         $link = null;
         if ($linkId) {
-            $link = Link::where('user_id', $userId)->find($linkId);
+            $link = Material::query()
+                ->where('module_id', $this->moduleId)
+                ->where('user_id', $userId)
+                ->find($linkId);
         }
-
-//        $link = Link::where('user_id', $userId)
-//            ->where('link', $url)
-//            ->first();
 
         if (!$link) {
-            $link = new Link();
-            $link->user_id = $userId;
+            $parsed = parse_url($url);
+            $base = ($parsed['host'] ?? '') . ($parsed['path'] ?? '');
+            $slug = Str::slug($base);
+
+            $original = $slug;
+            $i = 1;
+            while (Material::query()->withTrashed()->where('slug', $slug)->exists()) {
+                $i++;
+                $slug = "{$i}-{$original}";
+            }
+
+            $link = Material::query()
+                ->create([
+                    'user_id' => $userId,
+                    'module_id' => $this->moduleId,
+                    'slug' => $slug,
+            ]);
         }
 
-        $link->link = $url;
+        $link->short_content = $url;
         $link->save();
 
         return $link;
@@ -59,7 +84,10 @@ class LinkRepository
 
     public function deleteLink(int $userId, int $linkId): mixed
     {
-        $link = Link::where('user_id', $userId)->find($linkId);
+        $link = Material::query()
+            ->where('module_id', $this->moduleId)
+            ->where('user_id', $userId)
+            ->find($linkId);
 
         if ($link) {
             $link->delete();

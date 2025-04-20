@@ -1,1 +1,0 @@
-import{W as e}from"./WalletsList-7oaSRFiu.js";import{_ as t,o,c as n,a as s}from"./index-niEc4CDs.js";const a={name:"Wallets",components:{WalletsList:e}},c=s("h1",null,"Каталог ссылок",-1),r=s("div",{class:"mt-4"}," тут будут линки ",-1),_=[c,r];function i(l,d,p,m,f,u){return o(),n("div",null,_)}const k=t(a,[["render",i]]);export{k as default};

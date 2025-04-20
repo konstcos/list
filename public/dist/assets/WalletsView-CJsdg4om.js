@@ -1,1 +1,0 @@
-import{_ as t,o as s,c as o,a as e}from"./index-b4HkFqwi.js";const n={name:"Wallets"},a=e("h1",null,"Мои кошельки",-1),c=e("div",null," Список кошельков ",-1),_=[a,c];function l(r,d,i,p,u,f){return s(),o("div",null,_)}const m=t(n,[["render",l]]);export{m as default};
