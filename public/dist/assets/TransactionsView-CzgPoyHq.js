@@ -1,1 +1,0 @@
-import{_ as s,c as a,a as n,o}from"./index-EWT_rdbE.js";const t={name:"TransactionsView"};function r(c,e,i,l,p,d){return o(),a("div",null,e[0]||(e[0]=[n("h1",null,"Денежные переводы",-1),n("div",null," Список транзакций ",-1)]))}const _=s(t,[["render",r]]);export{_ as default};
