@@ -1,1 +1,0 @@
-import{_ as s,c as t,a as o,o as n}from"./index-BobiO0F-.js";const c={},r={class:"home"};function a(l,e){return n(),t("div",r,e[0]||(e[0]=[o("h1",null,"Различные списки для удобства и прочего...",-1),o("div",null,"очень скоро будут",-1)]))}const d=s(c,[["render",a]]);export{d as default};
