@@ -5,6 +5,7 @@ namespace Core\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+use Taxonomy\Models\TaxonomyCategory;
 
 class Material extends Model
 {
@@ -28,6 +29,16 @@ class Material extends Model
         static::creating(function (Material $material) {
             $material->ulid ??= (string) Str::ulid();
         });
+    }
+
+    public function categories(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            TaxonomyCategory::class,
+            'category_material',
+            'material_id',
+            'category_id'
+        )->whereNull('category_material.deleted_at');
     }
 
 }

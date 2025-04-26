@@ -19,6 +19,7 @@ class LinkRepository
         $userLinks = Material::query()
             ->where('module_id', $this->moduleId)
             ->where('user_id', '=', $userId)
+            ->with('categories')
             ->orderBy('id', 'desc')
             ->get();
 
@@ -27,6 +28,7 @@ class LinkRepository
                 'id' => $userLink->id,
                 'user_id' => $userLink->user_id,
                 'link' => $userLink->short_content,
+                'categories' => $userLink->categories,
                 'created_at' => $userLink->created_at,
                 'updated_at' => $userLink->updated_at,
                 'deleted_at' => $userLink->deleted_at,

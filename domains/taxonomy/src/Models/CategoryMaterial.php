@@ -12,7 +12,7 @@ class CategoryMaterial extends Model
     protected $table = 'category_material';
 
     protected $fillable = [
-        'user_id',
+        'is_primary',
         'category_id',
         'material_id',
         'position',

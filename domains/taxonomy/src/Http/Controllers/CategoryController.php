@@ -69,5 +69,52 @@ class CategoryController extends BaseController
         );
     }
 
+    public function receiveCategories(Request $request, CategoryUseCase $useCase): JsonResponse
+    {
+
+        $result = $useCase->receiveCategories();
+
+        return response()->json(
+            [
+                'status' => $result['status'],
+                'info' => $result['info'],
+                'data' => $result['data'],
+            ]
+        );
+    }
+
+    public function bindMaterialToCategories(Request $request, CategoryUseCase $useCase): JsonResponse
+    {
+
+        $materialId = (int)$request->material_id;
+        $primaryCategoryId = (int)$request->primary_id;
+
+        $categories = [
+            (int)$request->category1_id,
+            (int)$request->category2_id,
+            (int)$request->category3_id,
+        ];
+
+        $categories = array_values(array_filter($categories, function ($item) {
+            return is_int($item) && $item !== 0;
+        }));
+
+        $data = [
+            'materialId' => $materialId,
+            'primaryId' => $primaryCategoryId,
+            'categories' => $categories,
+
+        ];
+
+        $result = $useCase->bindMaterialToCategories($data);
+
+        return response()->json(
+            [
+                'status' => $result['status'],
+                'info' => $result['info'],
+                'data' => $result['data'],
+            ]
+        );
+    }
 
 }

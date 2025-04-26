@@ -23,5 +23,17 @@ Route::group(['prefix' => 'taxonomy'], function () {
             '/delete-category',
             [CategoryController::class, 'deleteCategory']
         )->name('deleteCategory');
+
+        Route::match(
+            ['post', 'option'],
+            '/bind-material',
+            [CategoryController::class, 'bindMaterialToCategories']
+        )->name('receiveCategories');
+
+        Route::match(
+            ['post', 'option'],
+            '/receive-category',
+            [CategoryController::class, 'receiveCategories']
+        )->name('receiveCategories');
     });
 });

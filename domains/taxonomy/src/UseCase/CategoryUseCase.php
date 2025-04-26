@@ -87,4 +87,68 @@ class CategoryUseCase
         ];
     }
 
+
+    public function bindMaterialToCategories($data): array
+    {
+        $materialId = $data['materialId'];
+        $primaryCategoryId = $data['primaryId'];
+        $categories = $data['categories'];
+        logger('cat', [
+            'categories' => $categories,
+        ]);
+        if (count($categories) > 0 && $primaryCategoryId === 0) {
+            $primaryCategoryId = $categories[0];
+        }
+
+
+        try {
+            $this->categoryRepository->clearAllMaterialCategories($materialId);
+
+            foreach ($categories as $categoryId) {
+                $this->categoryRepository->bindMaterialToCategories($materialId, $categoryId, $categoryId == $primaryCategoryId);
+            }
+
+        } catch (\Exception $e) {
+            return [
+                'status' => 'fail',
+                'info' => 'error while binding material to categories',
+                'data' => [
+                    'error' => $e->getMessage(),
+                ],
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'info' => 'bind material to categories successfully',
+            'data' => [
+            ],
+        ];
+    }
+
+
+    public function receiveCategories(): array
+    {
+
+        try {
+            $categories = $this->categoryRepository->receiveCategories();
+        } catch (\Exception $e) {
+            return [
+                'status' => 'fail',
+                'info' => 'error deleting categories',
+                'data' => [
+                    'error' => $e->getMessage(),
+                ],
+            ];
+        }
+
+        return [
+            'status' => 'success',
+            'info' => 'receive category successfully',
+            'data' => [
+                'categories' => $categories,
+            ],
+        ];
+    }
+
 }
