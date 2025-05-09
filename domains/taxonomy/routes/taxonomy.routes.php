@@ -10,25 +10,33 @@ Route::group(['prefix' => 'taxonomy'], function () {
             ['post', 'option'],
             '/user-categories',
             [CategoryController::class, 'userCategories']
-        )->name('userCategories');
+        )
+            ->name('userCategories')
+            ->middleware('role:admin');
 
         Route::match(
             ['post', 'option'],
             '/save-category',
             [CategoryController::class, 'createOrUpdateCategory']
-        )->name('createOrUpdateCategory');
+        )
+            ->name('createOrUpdateCategory')
+            ->middleware('role:admin');
 
         Route::match(
             ['post', 'option'],
             '/delete-category',
             [CategoryController::class, 'deleteCategory']
-        )->name('deleteCategory');
+        )
+            ->name('deleteCategory')
+            ->middleware('role:admin');
 
         Route::match(
             ['post', 'option'],
             '/bind-material',
             [CategoryController::class, 'bindMaterialToCategories']
-        )->name('receiveCategories');
+        )
+            ->name('receiveCategories')
+            ->middleware('role:admin');
 
         Route::match(
             ['post', 'option'],

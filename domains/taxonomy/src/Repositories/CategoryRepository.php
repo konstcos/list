@@ -15,7 +15,6 @@ class CategoryRepository
     {
         $categories = [];
         $userCategories = TaxonomyCategory::query()
-            ->where('user_id', $userId)
             ->orderBy('id', 'desc')
             ->get()
             ->toArray();
@@ -53,7 +52,7 @@ class CategoryRepository
     {
         $category = null;
         if ($categoryId) {
-            $category = TaxonomyCategory::where('user_id', $userId)->find($categoryId);
+            $category = TaxonomyCategory::query()->find($categoryId);
         }
 
         if (!$category) {
@@ -71,7 +70,7 @@ class CategoryRepository
 
     public function deleteCategory(int $userId, int $categoryId): mixed
     {
-        $link = TaxonomyCategory::where('user_id', $userId)->find($categoryId);
+        $link = TaxonomyCategory::query()->find($categoryId);
 
         if ($link) {
             $link->delete();
