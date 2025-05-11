@@ -13,13 +13,24 @@ class LinkRepository
 
     private int $moduleId = 1;
 
-    public function receiveAllUserLinks(int $userId): array
+    public function receiveAllUserLinks(int $userId, int $page, array $categories=[]): array
     {
         $links = [];
         $userLinks = Material::query()
             ->where('module_id', $this->moduleId)
             ->where('user_id', '=', $userId)
             ->with('categories')
+            ->when(!empty($categories), function ($query) use ($categories) {
+                // выборка по типу "или" если есть хотя бы одна из заданных
+                // возможно, потом добавлю и этот вариант по выбору
+//                $query->whereHas('categories', function ($q) use ($categories) {
+//                    $q->whereIn('taxonomy_categories.id', $categories);
+//                });
+
+                $query->whereHas('categories', function ($q) use ($categories) {
+                    $q->whereIn('taxonomy_categories.id', $categories);
+                }, '=', count($categories));
+            })
             ->orderBy('id', 'desc')
             ->get();
 

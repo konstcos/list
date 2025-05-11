@@ -16,11 +16,11 @@ class LinkUseCase
     }
 
 
-    public function receiveAllUserLinks(int $userId): array
+    public function receiveAllUserLinks(int $userId, int $page, array $categories=[]): array
     {
 
         try {
-            $links = $this->linkRepository->receiveAllUserLinks($userId);
+            $links = $this->linkRepository->receiveAllUserLinks($userId, $page, $categories);
         } catch (\Exception $e) {
             return [
                 'status' => 'fail',

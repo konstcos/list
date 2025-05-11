@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Taxonomy\Models\TaxonomyCategory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Material extends Model
 {
@@ -31,7 +32,7 @@ class Material extends Model
         });
     }
 
-    public function categories(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function categories(): BelongsToMany
     {
         return $this->belongsToMany(
             TaxonomyCategory::class,

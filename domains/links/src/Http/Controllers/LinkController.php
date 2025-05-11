@@ -12,7 +12,17 @@ class LinkController extends BaseController
     public function userLinks(Request $request, LinkUseCase $useCase): JsonResponse
     {
         $userId = $request->user()->id;
-        $result = $useCase->receiveAllUserLinks($userId);
+        $page = (int)$request->page ?? 1;
+        $categories = (array)$request->categories ?? [];
+
+        $result = $useCase->receiveAllUserLinks($userId, $page, $categories);
+
+
+        logger('nen', [
+            '$page' => $page,
+            'categories' => $categories,
+
+        ]);
 
         return response()->json([
             'status' => $result['status'],
