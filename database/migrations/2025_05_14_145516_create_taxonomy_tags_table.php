@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('taxonomy_categories', function (Blueprint $table) {
+        Schema::create('taxonomy_tags', function (Blueprint $table) {
             $table->id();
-
-            $table->unsignedBigInteger('user_id');
-            $table->string('slug')->unique();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('title');
-            $table->text('description')->nullable()->default(null);
-
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('color', 32)->default('default');
+            $table->timestamps();
             $table->softDeletes();
 
-            $table->timestamps();
+            $table->unique(['title']);
         });
     }
 
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('taxonomy_categories');
+        Schema::dropIfExists('taxonomy_tags');
     }
 };

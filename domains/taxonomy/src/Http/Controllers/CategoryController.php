@@ -21,21 +21,6 @@ class CategoryController extends BaseController
         ]);
     }
 
-    public function linkDetail(Request $request, CategoryUseCase $useCase): JsonResponse
-    {
-        $linkId = $request->link_id;
-
-        return response()->json(
-            [
-                'status' => 'success',
-                'info' => 'okey',
-                'data' => [
-                    'link' => $linkId
-                ]
-            ]
-        );
-    }
-
     public function createOrUpdateCategory(Request $request, CategoryUseCase $useCase): JsonResponse
     {
         $userId = $request->user()->id;
