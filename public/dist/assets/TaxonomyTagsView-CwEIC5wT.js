@@ -1,0 +1,1 @@
+import{_ as o,c as n,a,o as r}from"./index-C5Uagddi.js";const s={};function t(c,e){return r(),n("div",null,[...e[0]||(e[0]=[a("h1",null," Тэги ",-1)])])}const _=o(s,[["render",t]]);export{_ as default};
